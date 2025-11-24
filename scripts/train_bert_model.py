@@ -3,6 +3,7 @@ import torch
 from transformers import Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from datasets import Dataset, load_dataset
+from transformers import DataCollatorWithPadding
 
 # 설정
 BASE_MODEL = "line-corporation/line-distilbert-base-japanese"
@@ -49,6 +50,7 @@ test_dataset = Dataset.from_list(
 
 # BERT 토크나이저 및 모델 초기화
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 model = DistilBertForSequenceClassification.from_pretrained(BASE_MODEL, num_labels=2)
 
 
@@ -76,7 +78,7 @@ training_args = TrainingArguments(
     num_train_epochs=NUM_TRAIN_EPOCHS,
     learning_rate=LEARNING_RATE,
     per_device_train_batch_size=BATCH_SIZE,
-    per_device_eval_batch_size=1,
+    per_device_eval_batch_size=BATCH_SIZE, # better to use equal to or greater than per_device_train_batch_size
     weight_decay=0.01,
     optim="adamw_torch",
     disable_tqdm=False,
@@ -87,6 +89,7 @@ training_args = TrainingArguments(
     bf16=True,
     log_level="error",
     report_to="wandb",  # w&b 로그인 필요, 없을시 None
+    device=device
 )
 
 trainer = Trainer(
@@ -96,6 +99,7 @@ trainer = Trainer(
     train_dataset=train_dataset,
     eval_dataset=test_dataset,
     tokenizer=tokenizer,
+    data_collator=data_collator # this is to better memory managment
 )
 
 trainer.train()
