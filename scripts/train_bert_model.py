@@ -4,6 +4,13 @@ from transformers import Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from datasets import Dataset, load_dataset
 from transformers import DataCollatorWithPadding
+import wandb
+
+def is_wandb_logged_in():
+    try:
+        return wandb.api.api_key is not None
+    except:
+        return False
 
 # 설정
 BASE_MODEL = "line-corporation/line-distilbert-base-japanese"
@@ -75,6 +82,11 @@ model.to(device)
 bf16 = True if torch.cuda.is_available() else False
 # fp16 = True if torch.cuda.is_available() else False
 
+use_wandb = is_wandb_logged_in()
+
+report_to = "wandb" if use_wandb else "None"
+print(f"📡 W&B logging: {report_to}")
+
 training_args = TrainingArguments(
     output_dir=OUTPUT_DIR,
     num_train_epochs=NUM_TRAIN_EPOCHS,
@@ -88,9 +100,14 @@ training_args = TrainingArguments(
     evaluation_strategy="steps",
     eval_steps=EVAL_STEPS,
     save_steps=SAVE_STEPS,
+    save_total_limit=3,              # 체크포인트 개수 제한 (선택)
+    load_best_model_at_end=True,     # 마지막에 best model 로드 (선택)
+    metric_for_best_model="f1",      # 기준 메트릭 (선택)
+    greater_is_better=True,
+    bf16=bf16,
     bf16=bf16,
     log_level="error",
-    report_to="wandb",  # w&b 로그인 필요, 없을시 None
+    report_to=report_to,
 )
 
 trainer = Trainer(
