@@ -91,7 +91,6 @@ training_args = TrainingArguments(
     bf16=bf16,
     log_level="error",
     report_to="wandb",  # w&b 로그인 필요, 없을시 None
-    device=device
 )
 
 trainer = Trainer(
