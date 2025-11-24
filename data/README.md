@@ -3,7 +3,7 @@
 ## 디렉터리 구성
 
 ```
-datasets/
+data/
 ├── train/
 │   ├── trainset_cosmetics.csv         # 화장품 광고 문구 학습 데이터 (9,428 건)
 │   └── trainset_health_food.csv       # 건강기능식품 광고 문구 학습 데이터 (396 건)
