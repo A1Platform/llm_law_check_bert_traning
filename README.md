@@ -13,6 +13,37 @@
 
 본 README는 PDF 문서 내용만을 기반으로 구성되었습니다.
 
+아래에 안내되어 있는 코드등의 실행을 위한 환경은 다음과 같습니다.
+
+### 개발 환경 설정
+
+* python: 3.12.x
+
+위 버전에 맞춰 가상 환경을 생성하는 방법은 다음과 같아요. 
+
+#### Install pyenv
+```shell
+ brew install pyenv
+```
+
+```shell
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(pyenv init -)"' >> ~/.zshrc
+```
+
+`source ~/.zshrc` 를 꼭 실행해주세요.
+
+#### python 3.12 설치
+```shell
+pyenv install 3.12
+``` 
+
+#### 가상환경 생성
+```shell
+python -m venv .venv
+```
+
 ---
 
 # Training Pipeline
