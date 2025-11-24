@@ -56,9 +56,7 @@ model = DistilBertForSequenceClassification.from_pretrained(BASE_MODEL, num_labe
 
 # 토큰화 함수 정의
 def tokenize_function(examples):
-    return tokenizer(
-        examples["text"], truncation=True, padding="max_length", max_length=512
-    )
+    return tokenizer(examples["text"], truncation=True)
 
 
 # 데이터셋에 토큰화 적용
