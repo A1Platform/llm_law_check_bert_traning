@@ -39,12 +39,13 @@ elif torch.cuda.is_available():
 
 # 데이터셋 로드
 origin_dataset = load_dataset(DATASETS)["train"]
-train_dataset = []
+
 train_dataset = Dataset.from_list(
-    [i for i in train_dataset if i["tag"] != "line_ad_original"]
+    [i for i in origin_dataset if i["tag"] != "line_ad_original"]
 )
+
 test_dataset = Dataset.from_list(
-    [i for i in train_dataset if i["tag"] == "line_ad_original"]
+    [i for i in origin_dataset if i["tag"] == "line_ad_original"]
 )
 
 
@@ -71,6 +72,9 @@ test_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "l
 # 모델 학습
 model.to(device)
 
+bf16 = True if torch.cuda.is_available() else False
+# fp16 = True if torch.cuda.is_available() else False
+
 training_args = TrainingArguments(
     output_dir=OUTPUT_DIR,
     num_train_epochs=NUM_TRAIN_EPOCHS,
@@ -84,7 +88,7 @@ training_args = TrainingArguments(
     evaluation_strategy="steps",
     eval_steps=EVAL_STEPS,
     save_steps=SAVE_STEPS,
-    bf16=True,
+    bf16=bf16,
     log_level="error",
     report_to="wandb",  # w&b 로그인 필요, 없을시 None
     device=device
