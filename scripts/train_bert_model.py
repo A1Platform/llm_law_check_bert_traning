@@ -26,68 +26,76 @@ def compute_metrics(pred):
     recall = recall_score(labels, preds, average="weighted")
     return {"accuracy": acc, "f1": f1, "precision": precision, "recall": recall}
 
+# setup device
+device = torch.device("cpu")
+if torch.backends.mps.is_available():
+    torch.mps.empty_cache()
+    device = torch.device("mps")
+    print("⚙️ MPS available")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+    print("⚙️ CUDA available")
 
-# 데이터셋 로드
-origin_dataset = load_dataset(DATASETS)["train"]
-train_dataset = []
-train_dataset = Dataset.from_list(
-    [i for i in train_dataset if i["tag"] != "line_ad_original"]
-)
-test_dataset = Dataset.from_list(
-    [i for i in train_dataset if i["tag"] == "line_ad_original"]
-)
-
-
-# BERT 토크나이저 및 모델 초기화
-tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
-model = DistilBertForSequenceClassification.from_pretrained(BASE_MODEL, num_labels=2)
-
-
-# 토큰화 함수 정의
-def tokenize_function(examples):
-    return tokenizer(
-        examples["text"], truncation=True, padding="max_length", max_length=512
-    )
+# # 데이터셋 로드
+# origin_dataset = load_dataset(DATASETS)["train"]
+# train_dataset = []
+# train_dataset = Dataset.from_list(
+#     [i for i in train_dataset if i["tag"] != "line_ad_original"]
+# )
+# test_dataset = Dataset.from_list(
+#     [i for i in train_dataset if i["tag"] == "line_ad_original"]
+# )
 
 
-# 데이터셋에 토큰화 적용
-train_dataset = train_dataset.map(tokenize_function, batched=True)
-test_dataset = test_dataset.map(tokenize_function, batched=True)
-
-# 데이터셋 포맷 설정
-train_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "label"])
-test_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "label"])
+# # BERT 토크나이저 및 모델 초기화
+# tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
+# model = DistilBertForSequenceClassification.from_pretrained(BASE_MODEL, num_labels=2)
 
 
-# 모델 학습
-device = torch.device("cuda")
-model.to(device)
+# # 토큰화 함수 정의
+# def tokenize_function(examples):
+#     return tokenizer(
+#         examples["text"], truncation=True, padding="max_length", max_length=512
+#     )
 
-training_args = TrainingArguments(
-    output_dir=OUTPUT_DIR,
-    num_train_epochs=NUM_TRAIN_EPOCHS,
-    learning_rate=LEARNING_RATE,
-    per_device_train_batch_size=BATCH_SIZE,
-    per_device_eval_batch_size=1,
-    weight_decay=0.01,
-    optim="adamw_torch",
-    disable_tqdm=False,
-    logging_steps=LOGGING_STEPS,
-    evaluation_strategy="steps",
-    eval_steps=EVAL_STEPS,
-    save_steps=SAVE_STEPS,
-    bf16=True,
-    log_level="error",
-    report_to="wandb",  # w&b 로그인 필요, 없을시 None
-)
 
-trainer = Trainer(
-    model=model,
-    args=training_args,
-    compute_metrics=compute_metrics,
-    train_dataset=train_dataset,
-    eval_dataset=test_dataset,
-    tokenizer=tokenizer,
-)
+# # 데이터셋에 토큰화 적용
+# train_dataset = train_dataset.map(tokenize_function, batched=True)
+# test_dataset = test_dataset.map(tokenize_function, batched=True)
 
-trainer.train()
+# # 데이터셋 포맷 설정
+# train_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "label"])
+# test_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "label"])
+
+
+# # 모델 학습
+# model.to(device)
+
+# training_args = TrainingArguments(
+#     output_dir=OUTPUT_DIR,
+#     num_train_epochs=NUM_TRAIN_EPOCHS,
+#     learning_rate=LEARNING_RATE,
+#     per_device_train_batch_size=BATCH_SIZE,
+#     per_device_eval_batch_size=1,
+#     weight_decay=0.01,
+#     optim="adamw_torch",
+#     disable_tqdm=False,
+#     logging_steps=LOGGING_STEPS,
+#     evaluation_strategy="steps",
+#     eval_steps=EVAL_STEPS,
+#     save_steps=SAVE_STEPS,
+#     bf16=True,
+#     log_level="error",
+#     report_to="wandb",  # w&b 로그인 필요, 없을시 None
+# )
+
+# trainer = Trainer(
+#     model=model,
+#     args=training_args,
+#     compute_metrics=compute_metrics,
+#     train_dataset=train_dataset,
+#     eval_dataset=test_dataset,
+#     tokenizer=tokenizer,
+# )
+
+# trainer.train()
